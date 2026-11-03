@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reverse Words in a String: One-Liner vs In-Place</title><style>body{max-width:720px;margin:40px auto;padding:0 16px;font-family:system-ui,sans-serif;line-height:1.6}pre{background:#f4f4f4;padding:12px;overflow:auto}</style></head><body><h1>Reverse Words in a String: The One-Liner, the In-Place Version, and What Interviewers Actually Check</h1>
+<p>Reverse Words in a String (LeetCode 151) takes <code>"  the sky   is blue "</code> and returns <code>"blue is sky the"</code>: words reversed, leading and trailing spaces removed, and runs of spaces collapsed to one.</p>
+<h2>The one-liner</h2>
+<p>In Python, <code>" ".join(reversed(s.split()))</code> is correct, because <code>split()</code> with no argument already drops empty strings and collapses whitespace. Say it, state O(n) time and O(n) space, and expect the follow-up.</p>
+<h2>The follow-up: do it in place</h2>
+<p>The real question is usually: "If the string were a mutable character array, could you do it with O(1) extra space?" The classic answer is two reversals plus a cleanup pass:</p>
+<ol>
+<li>Remove extra spaces in place with a read pointer and a write pointer.</li>
+<li>Reverse the whole array.</li>
+<li>Reverse each word back.</li>
+</ol>
+<pre><code class="language-python">def reverse_words(chars):
+    # 1. compact spaces in place
+    w, i, n = 0, 0, len(chars)
+    while i &lt; n:
+        while i &lt; n and chars[i] == ' ':
+            i += 1
+        if i == n:
+            break
+        if w &gt; 0:
+            chars[w] = ' '
+            w += 1
+        while i &lt; n and chars[i] != ' ':
+            chars[w] = chars[i]
+            w += 1
+            i += 1
+    del chars[w:]
+
+    def rev(a, lo, hi):
+        while lo &lt; hi:
+            a[lo], a[hi] = a[hi], a[lo]
+            lo, hi = lo + 1, hi - 1
+
+    # 2. reverse everything, 3. reverse each word
+    rev(chars, 0, len(chars) - 1)
+    start = 0
+    for j in range(len(chars) + 1):
+        if j == len(chars) or chars[j] == ' ':
+            rev(chars, start, j - 1)
+            start = j + 1
+    return chars
+</code></pre>
+<h2>Why the double reversal works</h2>
+<p>Reversing the whole array puts the words in the right order but spells each one backwards. Reversing each word individually fixes the spelling without moving the words. The same trick rotates an array by k positions, so mentioning that connection is a nice signal.</p>
+<h2>Test cases to say out loud</h2>
+<ul>
+<li>Only spaces: <code>"   "</code> returns <code>""</code>.</li>
+<li>One word with padding: <code>"  hello "</code> returns <code>"hello"</code>.</li>
+<li>Multiple spaces between words.</li>
+<li>Already clean input, to show you don't break the normal case.</li>
+</ul>
+<h2>Presenting it</h2>
+<p>Give the one-liner first, then volunteer the in-place version before being asked, and explain the three passes in one sentence each. Interviewers mostly check whether you handle the whitespace rules and whether you can reason about pointer bounds without off-by-one errors.</p>
+<p>I rehearse explanations like this one with <a href="https://www.linkjob.ai/">Linkjob AI</a>, an AI assistant for technical interviews. (Disclosure: I work on Linkjob AI.)</p></body></html>
