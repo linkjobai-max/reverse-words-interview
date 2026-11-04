@@ -1,0 +1,70 @@
+---
+title: "Reverse Words in a String: The One-Liner, the In-Place Version, and What Interviewers Actually Check"
+format:
+  html:
+    toc: true
+---
+
+Reverse Words in a String (LeetCode 151) takes `"  the sky   is blue "` and returns `"blue is sky the"`: words reversed, leading and trailing spaces removed, and runs of spaces collapsed to one.
+
+## The one-liner
+
+In Python, `" ".join(reversed(s.split()))` is correct, because `split()` with no argument already drops empty strings and collapses whitespace. Say it, state O(n) time and O(n) space, and expect the follow-up.
+
+## The follow-up: do it in place
+
+The real question is usually: "If the string were a mutable character array, could you do it with O(1) extra space?" The classic answer is two reversals plus a cleanup pass:
+
+1. Remove extra spaces in place with a read pointer and a write pointer.
+2. Reverse the whole array.
+3. Reverse each word back.
+
+```python
+def reverse_words(chars):
+    # 1. compact spaces in place
+    w, i, n = 0, 0, len(chars)
+    while i < n:
+        while i < n and chars[i] == ' ':
+            i += 1
+        if i == n:
+            break
+        if w > 0:
+            chars[w] = ' '
+            w += 1
+        while i < n and chars[i] != ' ':
+            chars[w] = chars[i]
+            w += 1
+            i += 1
+    del chars[w:]
+
+    def rev(a, lo, hi):
+        while lo < hi:
+            a[lo], a[hi] = a[hi], a[lo]
+            lo, hi = lo + 1, hi - 1
+
+    # 2. reverse everything, 3. reverse each word
+    rev(chars, 0, len(chars) - 1)
+    start = 0
+    for j in range(len(chars) + 1):
+        if j == len(chars) or chars[j] == ' ':
+            rev(chars, start, j - 1)
+            start = j + 1
+    return chars
+```
+
+## Why the double reversal works
+
+Reversing the whole array puts the words in the right order but spells each one backwards. Reversing each word individually fixes the spelling without moving the words. The same trick rotates an array by k positions, so mentioning that connection is a nice signal.
+
+## Test cases to say out loud
+
+- Only spaces: `"   "` returns `""`.
+- One word with padding: `"  hello "` returns `"hello"`.
+- Multiple spaces between words.
+- Already clean input, to show you don't break the normal case.
+
+## Presenting it
+
+Give the one-liner first, then volunteer the in-place version before being asked, and explain the three passes in one sentence each. Interviewers mostly check whether you handle the whitespace rules and whether you can reason about pointer bounds without off-by-one errors.
+
+I rehearse explanations like this one with [Linkjob AI](https://www.linkjob.ai/), an AI assistant for technical interviews. (Disclosure: I work on Linkjob AI.)
